@@ -1,0 +1,37 @@
+set up photo for pxe
+
+
+1) login
+2) change password
+3) add proxy:
+	- vi /etc/sysconfig/proxy
+	- edit PROXY_ENABLED, HTTP_PROXY, HTTPS_PROXY, and NO_PROXY
+4) reboot
+5) login
+6) tdnf check-update
+7) tdnf upgrade
+10) tdnf install wget unzip nano dnsmasq
+	-do we need atftp? probably not, this is included in dnsmasq
+11) mkdir /var/tftpd
+12) mkdir /var/tftpd/images
+13) mkdir /var/tftpd/images/esxi-6.7.0-8169922
+14) cd /var/tftpd/images/esxi-6.7.0-8169922
+15) extract esx ISO to a folder
+16) zip up the files from the iso
+17) set up a fenix HTTP server with the zip file in the root
+18) on photon: wget http://192.168.79.1:80/esxi67.zip --no-proxy
+19) on photon: unzip -LL esxi67.zip (-LL to force lower case file names)
+	-this should be done so that you have the file /var/tftpd/images/esxi-6.7.0-8169922/boot.cfg
+20) run sed -e "s#/##g" -e "3s#^#prefix=/`basename $PWD`/\n#" -i.bak boot.cfg
+21) edit /var/tftpd/images/esxi-6.7.0-8169922/boot.cfg 
+	-set prefix=/images/esxi-6.7.0-8169922/ (need to figure out how to incorporate this in the sed above
+	-set timeout=15
+	-delete extra blank prefix= line
+
+
+
+13) edit /etc/dnsmasq.conf
+	- uncomment enable-tftp
+	- edit tftp-root to = /var/tftpd
+	- uncomment tftp-secure (dnsmasq user must own files served by tftp)
+	
